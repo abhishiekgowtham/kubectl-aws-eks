@@ -1,6 +1,24 @@
 name: kubectl-aws-eks
 description: "This action provides kubectl for Github Actions."
-author: 'Maksim Karpychev'
+author: "Maksim Karpychev"
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.aws_access_key_id }}
+    - ${{ inputs.aws_secret_access_key }}
+    - ${{ inputs.aws_role_arn }}
+    - ${{ inputs.command }}
+inputs:
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    required: false
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    required: true
+  aws_role_arn:
+    description: "AWS Role ARN"
+    required: true
+  command:
+    description: 'kubectl command to run, without the kubectl, e.g. `get pods`'
+    required: true

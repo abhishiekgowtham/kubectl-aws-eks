@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -e
+
+access_key_id="$1"
+secret_access_key="$2"
+role_arn="$3"
+command="$4"
+
+# Set aws credentials
+aws configure set aws_access_key_id $access_key_id --profile github-actions
+aws configure set aws_secret_access_key $secret_access_key --profile github-actions
+aws configure set region us-east-1 --profile github-actions # region doesn't matter
+aws configure set $role_arn --profile github-actions
+aws configure set role_session_name ghactions --profile github-actions
+aws configure set source_profile github-actions --profile github-actions
+aws configure set duration_seconds 900 --profile github-actions
+
+echo "aws configured list: $(aws configure list)"
 
 # Extract the base64 encoded config data and write this to the KUBECONFIG
 echo "$KUBE_CONFIG_DATA" | base64 -d >/tmp/config
@@ -16,15 +32,6 @@ else
   echo "Using kubectl version: $(kubectl version --client --short)"
 fi
 
-# Set aws credentials
-aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile github-actions
-aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile github-actions
-aws configure set region us-east-1 --profile github-actions # region doesn't matter
-aws configure set $AWS_ROLE_ARN --profile github-actions
-aws configure set role_session_name ghactions --profile github-actions
-aws configure set source_profile github-actions --profile github-actions
-aws configure set duration_seconds 900 --profile github-actions
-
 if [ -z ${IAM_VERSION+x} ]; then
   echo "Using aws-iam-authenticator version: $(aws-iam-authenticator version)"
 else
@@ -35,4 +42,4 @@ else
   echo "Using aws-iam-authenticator version: $(aws-iam-authenticator version)"
 fi
 
-sh -c "kubectl $*"
+sh -c "kubectl $command"
